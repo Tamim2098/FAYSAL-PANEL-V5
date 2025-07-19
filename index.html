@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FAYSAL PANEL V5</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+      font-family: 'Quicksand', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+    body {
+      background: black;
+      color: white;
+      overflow: hidden;
+      position: relative;
+      height: 100vh;
+    }
+    #plexus-bg {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%; z-index: -1;
+    }
+    canvas {
+      position: absolute; display: block;
+      width: 100%; height: 100%;
+    }
+    .login-container, #panel-page {
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh; opacity: 1;
+      transition: opacity 1s ease-in-out;
+      width: 100%; position: absolute; top: 0; left: 0;
+      flex-direction: column;
+    }
+    .hidden {
+      opacity: 0; pointer-events: none;
+    }
+    .fade-in {
+      animation: fadeIn 1s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .login-box {
+      background: #111; padding: 30px;
+      border-radius: 20px; box-shadow: 0 0 15px red;
+      text-align: center; width: 90%; max-width: 400px;
+    }
+    .login-box h2 {
+      margin-bottom: 20px;
+      font-size: 24px;
+      color: white;
+      text-shadow: 0 0 8px red;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%; padding: 12px; margin: 10px 0;
+      border: 2px solid red; border-radius: 10px;
+      background: #222; color: white; font-size: 16px;
+    }
+    .login-options {
+      display: flex; justify-content: space-between;
+      font-size: 14px; margin-bottom: 20px; color: white;
+      user-select: none;
+    }
+    .login-options label {
+      cursor: pointer;
+    }
+    .login-box button {
+      background: red; border: none; color: white;
+      padding: 12px; font-weight: bold; width: 100%;
+      font-size: 16px; border-radius: 10px; cursor: pointer;
+      user-select: none; transition: background 0.3s ease;
+    }
+    .login-box button:hover {
+      background: #ff4444;
+    }
+    #error-msg {
+      margin-top: 15px; font-size: 15px;
+      display: none; color: red; font-weight: bold;
+      user-select: none;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    #panel-page {
+      display: none; opacity: 0;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    .container {
+      background: rgba(0,0,0,0.9);
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 25px red;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 400px;
+      width: 90%;
+      user-select: none;
+    }
+    .sidebar {
+      display: flex; justify-content: center; gap: 10px;
+      margin-bottom: 20px; width: 100%;
+    }
+    .sidebar button {
+      background: white; color: black;
+      padding: 10px 15px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 10px white;
+      transition: 0.3s;
+      user-select: none;
+    }
+    .sidebar button.glow-clicked {
+      animation: glowPulse 1.2s infinite;
+      box-shadow: 0 0 25px red;
+    }
+    @keyframes glowPulse {
+      0% { box-shadow: 0 0 10px red; }
+      50% { box-shadow: 0 0 20px red; }
+      100% { box-shadow: 0 0 10px red; }
+    }
+    .panel {
+      padding: 20px;
+      border: 2px solid cyan;
+      border-radius: 20px;
+      background: #111;
+      width: 100%;
+      user-select: none;
+    }
+    .panel h2 {
+      color: cyan;
+      font-size: 20px;
+      margin-bottom: 15px;
+      user-select: none;
+      text-align: center;
+    }
+    .option {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 10px 0;
+      background: #000;
+      padding: 10px 15px;
+      border-radius: 10px;
+      font-size: 18px;
+      user-select: none;
+    }
+    .option span {
+      color: #0ff;
+      user-select: none;
+    }
+    .toggle {
+      width: 50px;
+      height: 25px;
+      background: #333;
+      border-radius: 50px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+      user-select: none;
+    }
+    .toggle::before {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 19px;
+      height: 19px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    .toggle.active {
+      background: #ff00cc;
+    }
+    .toggle.active::before {
+      left: 28px;
+    }
+    .open-fire-btn {
+      margin-top: 20px;
+      width: 100%;
+      padding: 15px;
+      background: red;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 0 15px red;
+      transition: box-shadow 0.3s ease;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+    }
+    .open-fire-btn:hover {
+      box-shadow: 0 0 25px #ff4444;
+    }
+    .open-fire-btn.red-glow-blink {
+      animation: redGlowBlink 3s ease forwards;
+    }
+    @keyframes redGlowBlink {
+      0%, 100% { box-shadow: 0 0 25px red; }
+      50% { box-shadow: 0 0 50px red; }
+    }
+    .popup {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #111;
+      padding: 35px;
+      border-radius: 25px;
+      box-shadow: 0 0 25px red;
+      width: 350px;
+      text-align: center;
+      display: none;
+      z-index: 999;
+      user-select: none;
+    }
+    .popup.active {
+      display: block;
+    }
+    .popup h3 {
+      font-size: 22px;
+      color: red;
+      margin-bottom: 15px;
+      user-select: none;
+    }
+    .popup p {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: #fff;
+      user-select: none;
+    }
+    .close {
+      position: absolute;
+      top: 5px; right: 10px;
+      background: red;
+      color: white;
+      border: none;
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 50%;
+      cursor: pointer;
+      user-select: none;
+    }
+    .glow-red { color: red; text-shadow: 0 0 8px red; user-select: none; }
+    .glow-lime { color: lime; text-shadow: 0 0 8px lime; user-select: none; }
+    .hide-when-popup {
+      filter: blur(5px);
+      pointer-events: none;
+      opacity: 0.2;
+    }
+    /* Payment message styling */
+    #payment-msg {
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: black;
+      border: 2px solid red;
+      color: red;
+      font-weight: bold;
+      font-size: 28px;
+      padding: 15px 25px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 0 20px red;
+      user-select: none;
+      display: none;
+      z-index: 1100;
+      animation: blink 1s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="plexus-bg"></canvas>
+
+<!-- LOGIN PAGE -->
+<div class="login-container" id="login-page">
+  <div class="login-box">
+    <h2>FAYSAL PANEL V5</h2>
+    <input type="text" id="username" placeholder="Enter username" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <input type="password" id="password" placeholder="Enter password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <div class="login-options">
+      <label><input type="checkbox" disabled> Save Password</label>
+      <label><input type="checkbox" onclick="togglePassword()"> Show Password</label>
+    </div>
+    <button onclick="login()">LOGIN</button>
+    <p id="error-msg"></p>
+  </div>
+</div>
+
+<!-- PANEL PAGE -->
+<div id="panel-page">
+  <div class="container">
+    <div class="sidebar">
+      <button onclick="showPopup('device', this)">DEVICE</button>
+      <button onclick="showPopup('security', this)">SECURITY</button>
+      <button onclick="showPopup('seller', this)">SELLER</button>
+    </div>
+    <div class="panel">
+      <div class="option">
+        <span>AIMBOT 🎯</span>
+        <div class="toggle" onclick="toggleSwitch(this)"></div>
+      </div>
+      <div class="option">
+        <span>SNIPER 🎯</span>
+        <div class="toggle" onclick="toggleSwitch(this)"></div>
+      </div>
+      <div class="option">
+        <span>LOCATION</span>
+        <div class="toggle" onclick="toggleSwitch(this)"></div>
+      </div>
+      <div class="option">
+        <span>HEADSHOT</span>
+        <div class="toggle" onclick="toggleSwitch(this)"></div>
+      </div>
+      <button class="open-fire-btn" id="open-fire-btn" onclick="openFreeFire()">OPEN FREE FIRE</button>
+    </div>
+  </div>
+
+  <!-- Popups -->
+  <div class="popup" id="popup-device">
+    <button class="close" onclick="closePopup()">X</button>
+    <h3>📱 DEVICE INFO</h3>
+    <p class="glow-lime">Model: SHF-70J</p>
+    <p class="glow-lime">Android</p>
+    <p class="glow-lime">None Root</p>
+  </div>
+
+  <div class="popup" id="popup-security">
+    <button class="close" onclick="closePopup()">X</button>
+    <h3>🔒 SECURITY</h3>
+    <p class="glow-red">Firewall: Active</p>
+    <p class="glow-red">Secure Boot: Enabled</p>
+  </div>
+
+  <div class="popup" id="popup-seller">
+    <button class="close" onclick="closePopup()">X</button>
+    <h3>👑 PANEL SELLER</h3>
+    <p class="glow-lime">Name: Maruf Al Faysal</p>
+    <p class="glow-lime">WhatsApp: 01612323061</p>
+  </div>
+</div>
+
+<!-- Payment message -->
+<div id="payment-msg">পেমেন্ট করুন</div>
+
+<script>
+  function togglePassword() {
+    const pass = document.getElementById("password");
+    pass.type = pass.type === "password" ? "text" : "password";
+  }
+
+  function login() {
+    const user = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
+    const error = document.getElementById("error-msg");
+
+    if (user === "faysal" && pass === "8080") {
+      error.style.display = "none";
+      const loginPage = document.getElementById("login-page");
+      loginPage.classList.add("hidden");
+      const panelPage = document.getElementById("panel-page");
+      panelPage.style.display = "flex";
+      panelPage.classList.remove("fade-in");
+      void panelPage.offsetWidth; // reflow
+      panelPage.classList.add("fade-in");
+    } else {
+      error.innerHTML = "আপনার দেওয়া তথ্য সঠিক নয় ‼️<br>প্যানেল কিনতে : 01612323061";
+      error.style.display = "block";
+      // Remove any previous animation first
+      error.style.animation = 'none';
+      // Force reflow
+      void error.offsetWidth;
+      // Add blink animation for 2 seconds
+      error.style.animation = "blink 1s ease-in-out 2";
+      // After 2 seconds, hide error message
+      setTimeout(() => {
+        error.style.display = "none";
+        error.style.animation = 'none';
+      }, 2000);
+    }
+  }
+
+  function showPopup(id, btn) {
+    document.querySelectorAll(".popup").forEach(p => p.classList.remove("active"));
+    document.getElementById("popup-" + id).classList.add("active");
+    document.querySelector(".container").classList.add("hide-when-popup");
+    document.querySelectorAll(".sidebar button").forEach(b => b.classList.remove("glow-clicked"));
+    btn.classList.add("glow-clicked");
+  }
+
+  function closePopup() {
+    document.querySelectorAll(".popup").forEach(p => p.classList.remove("active"));
+    document.querySelector(".container").classList.remove("hide-when-popup");
+    document.querySelectorAll(".sidebar button").forEach(b => b.classList.remove("glow-clicked"));
+  }
+
+  function toggleSwitch(elem) {
+    elem.classList.toggle("active");
+  }
+
+  function openFreeFire() {
+    const btn = document.getElementById("open-fire-btn");
+    const paymentMsg = document.getElementById("payment-msg");
+
+    btn.classList.add("red-glow-blink");
+    paymentMsg.style.display = "block";
+
+    setTimeout(() => {
+      paymentMsg.style.display = "none";
+      btn.classList.remove("red-glow-blink");
+    }, 3000);
+  }
+
+  // Plexus animation
+  const canvas = document.getElementById('plexus-bg');
+  const ctx = canvas.getContext('2d');
+  let width, height;
+  let points = [];
+
+  function initCanvas() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    points = [];
+    for(let i = 0; i < 60; i++) {
+      points.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5
+      });
+    }
+  }
+
+  function distance(p1, p2) {
+    return Math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, width, height);
+
+    points.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0 || p.x > width) p.vx = -p.vx;
+      if (p.y < 0 || p.y > height) p.vy = -p.vy;
+    });
+
+    points.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255, 0, 0, 0.8)";
+      ctx.fill();
+    });
+
+    for(let i = 0; i < points.length; i++) {
+      for(let j = i + 1; j < points.length; j++) {
+        const dist = distance(points[i], points[j]);
+        if (dist < 150) {
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(255, 0, 0, ${1 - dist/150})`;
+          ctx.lineWidth = 1;
+          ctx.moveTo(points[i].x, points[i].y);
+          ctx.lineTo(points[j].x, points[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', initCanvas);
+
+  initCanvas();
+  draw();
+</script>
+
+</body>
+</html>
